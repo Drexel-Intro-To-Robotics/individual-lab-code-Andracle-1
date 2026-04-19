@@ -132,14 +132,14 @@ class myTurtle():
             vel_msg.angular.z = 0
 
         rospy.loginfo(f"Rotating: {angle}")
-        while math.abs(rotation) < math.abs(angle):
+        while abs(rotation) < abs(angle):
             self.Twist.publish(vel_msg)
             self.rate.sleep()
 
             currentO = self.orient
             delta = currentO - lastO
             delta = math.atan2(math.sin(delta), math.cos(delta))
-            rotation = rotation + math.abs(delta)
+            rotation = rotation + abs(delta)
             lastO = currentO
 
         rospy.loginfo("Rotating Done")
