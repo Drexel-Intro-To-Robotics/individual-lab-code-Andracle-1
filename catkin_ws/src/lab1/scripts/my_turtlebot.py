@@ -43,7 +43,7 @@ class myTurtle():
             msg (Odometry): _description_
         """
         self.posx = msg.pose.pose.position.x
-        self.poxy = msg.pose.pose.position.y
+        self.posy = msg.pose.pose.position.y
 
     
     
@@ -56,7 +56,7 @@ class myTurtle():
         vel_msg = Twist()
         
         vel_msg.linear.x=0
-        vel_msg.learn.y=0
+        vel_msg.linear.y=0
         vel_msg.angular.x=0
         vel_msg.angular.y=0
 
@@ -71,8 +71,7 @@ class myTurtle():
         Args:
             dist (_type_): _description_
         """
-        while not rospy.is_shutdown():
-            self.rate.sleep()
+        
 
         currentx = self.posx
         currenty = self.posy
