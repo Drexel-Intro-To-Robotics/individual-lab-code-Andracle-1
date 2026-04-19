@@ -1,17 +1,27 @@
 #!/usr/bin/env python3
-
-
+import rospy
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+import math
 
 class myTurtle():
     
     
     def __init__(self) -> None:
         """_summary_
-        
         create all the nessary pubs/subs here and all the nessary other things
-        
         """
-        pass 
+        
+        self.odom = rospy.Subscriber('/odom', Odometry, self.odom_cb)
+        self.Twist = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+
+
+        self.posx = 0
+        self.posy = 0
+        
+        self.rate = rospy.Rate(10)
+        rospy.on_shutdown(self.stop_robot)
+ 
     
         
 
@@ -32,14 +42,27 @@ class myTurtle():
         Args:
             msg (Odometry): _description_
         """
-        pass
+        self.posx = msg.pose.pose.position.x
+        self.poxy = msg.pose.pose.position.y
+
+    
     
     def stop(self)->None:
         """_summary_
         
         Stop moving
         """
-        pass
+        rospy.loginfo("Stopping")
+        vel_msg = Twist()
+        
+        vel_msg.linear.x=0
+        vel_msg.learn.y=0
+        vel_msg.angular.x=0
+        vel_msg.angular.y=0
+
+        self.Twist.publish(vel_msg)
+        rospy.loginfo("Stopped")
+        
         
         
     def drive_straight(self, dist: float, vel: float)->None:
@@ -48,7 +71,26 @@ class myTurtle():
         Args:
             dist (_type_): _description_
         """
-        pass
+        while not rospy.is_shutdown():
+            self.rate.sleep()
+
+        currentx = self.posx
+        currenty = self.posy
+        distance = 0
+
+        vel_msg = Twist()
+        vel_msg.linear.x=vel
+        vel_msg.linear.y=0
+        
+        rospy.loginfo(f"Forward: {dist}")
+        while distance < dist:
+            self.Twist.publish(vel_msg)
+            self.rate.sleep()
+            distance = math.sqrt((self.posx - currentx)**2 +(self.posy - currenty)**2)
+
+        rospy.loginfo("Forward Done")
+        self.stop_robot()
+
         
     
     def spin_wheels(self, u1, u2, time):
@@ -83,7 +125,9 @@ def main():
     """_summary_
     create all the node start up here
     """
-    
+    rospy.init_node("turtlebot", anonymous = False)
+    Turtle = myTurtle()
+    Turtle.drive_straight(2, 0.5)
     
 
 
