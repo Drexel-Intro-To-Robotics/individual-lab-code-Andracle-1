@@ -2,10 +2,9 @@
 import rospy
 
 def main():
-    # Initialize the node with a name
+    # Initialize
     rospy.init_node('practice_node')
     
-    # Set a loop rate of 1 Hz (1 time per second)
     rate = rospy.Rate(1) 
     
     while not rospy.is_shutdown():

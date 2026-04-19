@@ -89,7 +89,7 @@ class myTurtle():
             distance = math.sqrt((self.posx - currentx)**2 +(self.posy - currenty)**2)
 
         rospy.loginfo("Forward Done")
-        self.stop_robot()
+        self.stop()
 
         
     
