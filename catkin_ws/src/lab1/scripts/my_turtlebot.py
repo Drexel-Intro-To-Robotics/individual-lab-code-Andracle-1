@@ -20,7 +20,7 @@ class myTurtle():
         self.posy = 0
         
         self.rate = rospy.Rate(10)
-        rospy.on_shutdown(self.stop_robot)
+        rospy.on_shutdown(self.stop)
  
     
         
