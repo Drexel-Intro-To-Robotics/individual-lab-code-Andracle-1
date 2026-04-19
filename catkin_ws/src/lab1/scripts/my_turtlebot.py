@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import rospy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PoseStamped
 from nav_msgs.msg import Odometry
 import math
+import tf
 
 class myTurtle():
     
@@ -13,11 +14,13 @@ class myTurtle():
         """
         
         self.odom = rospy.Subscriber('/odom', Odometry, self.odom_cb)
+        #self.goal = rospy.Subscriber('/goal', PoseStamped, self.nav_to_pose)
         self.Twist = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
 
         self.posx = 0
         self.posy = 0
+        self.orient = 0
         
         self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.stop)
@@ -33,6 +36,12 @@ class myTurtle():
         :param goal: PoseStamped
         :return:
         """
+        '''
+        goalx = goal.pose.position.x
+        goaly = goal.pose.position.y
+        raworient = goal.pose.orientation
+        goalorient = self.convert_to_euler(raworient)
+        '''
         pass
 
     def odom_cb(self,msg:Odometry) ->None:
@@ -44,7 +53,8 @@ class myTurtle():
         """
         self.posx = msg.pose.pose.position.x
         self.posy = msg.pose.pose.position.y
-
+        raworient = msg.pose.pose.orientation
+        self.orient = self.convert_to_euler(raworient)
     
     
     def stop(self)->None:
@@ -57,8 +67,8 @@ class myTurtle():
         
         vel_msg.linear.x=0
         vel_msg.linear.y=0
-        vel_msg.angular.x=0
-        vel_msg.angular.y=0
+        vel_msg.angular.z=0
+        
 
         self.Twist.publish(vel_msg)
         rospy.loginfo("Stopped")
@@ -109,7 +119,32 @@ class myTurtle():
         :param angle: angle to rotate
         :return: None
         """
-        pass
+
+        lastO = self.orient
+        rotation = 0
+
+        vel_msg = Twist()
+        if angle > 0:
+            vel_msg.angular.z = 0.3
+        elif angle < 0:
+            vel_msg.angular.z = -0.3
+        else:
+            vel_msg.angular.z = 0
+
+        rospy.loginfo(f"Rotating: {angle}")
+        while math.abs(rotation) < math.abs(angle):
+            self.Twist.publish(vel_msg)
+            self.rate.sleep()
+
+            currentO = self.orient
+            delta = currentO - lastO
+            delta = math.atan2(math.sin(delta), math.cos(delta))
+            rotation = rotation + math.abs(delta)
+            lastO = currentO
+
+        rospy.loginfo("Rotating Done")
+        self.stop()
+        
     
     def convert_to_euler(self, quat):
         # type: (Quaternion) -> float
@@ -118,7 +153,10 @@ class myTurtle():
         :param quat: quaternion 
         :return: euler angles
         """
-        
+        roll, pitch, yaw = tf.transformations.euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
+        return yaw
+
+
 
 def main():
     """_summary_
@@ -126,7 +164,9 @@ def main():
     """
     rospy.init_node("turtlebot", anonymous = False)
     Turtle = myTurtle()
+    rospy.sleep(1)
     Turtle.drive_straight(2, 0.5)
+    Turtle.rotate(math.pi)
     
 
 
