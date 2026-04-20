@@ -81,7 +81,7 @@ class myTurtle():
         Args:
             dist (_type_): _description_
         """
-        
+        rospy.sleep(1)
 
         currentx = self.posx
         currenty = self.posy
@@ -106,12 +106,30 @@ class myTurtle():
         """
         Spin the two wheels
 
-        :param u1: wheel 1 speed
-        :param u2: wheel 2 speed
+        :param u1: wheel 1 speed (left)
+        :param u2: wheel 2 speed (right)
         :param time: time to drive
         :return: None
         """
-        pass
+        rospy.sleep(1)
+        T = 0.287
+
+        linv = (u1 + u2)/2
+        angv = (u2 - u1) / T
+
+        vel_msg = Twist()
+        vel_msg.linear.x = linv
+        vel_msg.angular.z = angv
+
+        rospy.loginfo(f"u1 (left): {u1}, u2 (right): {u2}, time: {time}")
+        start = rospy.get_time()
+        while rospy.get_time - start < time:
+            self.Twist.publish(vel_msg)
+            self.rate.sleep()
+
+        rospy.loginfo("Spin Wheel Done")
+        self.stop()
+        
 
     def rotate(self, angle):
         """
@@ -119,7 +137,7 @@ class myTurtle():
         :param angle: angle to rotate
         :return: None
         """
-
+        rospy.sleep(1)
         lastO = self.orient
         rotation = 0
 
@@ -167,6 +185,9 @@ def main():
     rospy.sleep(1)
     Turtle.drive_straight(2, 0.5)
     Turtle.rotate(math.pi)
+    Turtle.spin_wheels(2, 1, 10)
+    Turtle.spin_wheels(0, 3, 10)
+    
     
 
 
