@@ -123,7 +123,7 @@ class myTurtle():
 
         rospy.loginfo(f"u1 (left): {u1}, u2 (right): {u2}, time: {time}")
         start = rospy.get_time()
-        while rospy.get_time - start < time:
+        while rospy.get_time() - start < time:
             self.Twist.publish(vel_msg)
             self.rate.sleep()
 
