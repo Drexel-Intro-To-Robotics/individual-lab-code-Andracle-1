@@ -14,7 +14,8 @@ class myTurtle():
         """
         
         self.odom = rospy.Subscriber('/odom', Odometry, self.odom_cb)
-        #self.goal = rospy.Subscriber('/goal', PoseStamped, self.nav_to_pose)
+        self.goal = rospy.Subscriber('/goal', PoseStamped, self.nav_to_pose)
+        self.send = rospy.Publisher('/goal', PoseStamped, queue_size=10)
         self.Twist = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
 
@@ -36,13 +37,34 @@ class myTurtle():
         :param goal: PoseStamped
         :return:
         """
-        '''
+        
         goalx = goal.pose.position.x
         goaly = goal.pose.position.y
         raworient = goal.pose.orientation
         goalorient = self.convert_to_euler(raworient)
-        '''
-        pass
+        
+        direction = math.atan2((goaly-self.posy), (goalx-self.posx))
+        rospy.loginfo(f"Towards: {direction}")
+        vel_msg = Twist()
+        vel_msg.angular.z = 0.1
+
+        while abs(self.orient - direction) > 0.05 :
+            self.Twist.publish(vel_msg)
+            self.rate.sleep()
+        self.stop()
+        rospy.loginfo("Pointing Towards Goal")
+
+        distance = math.sqrt((self.posx - goalx)**2 +(self.posy - goaly)**2)
+        self.drive_straight(distance, 1)
+        rospy.loginfo("At Goal")
+
+        vel_msg.angular.z = 0.1
+        while abs(self.orient - goalorient) > 0.05:
+            self.Twist.publish(vel_msg)
+            self.rate.sleep()
+        self.stop()
+        rospy.loginfo("nav_to_pose complete")
+        
 
     def odom_cb(self,msg:Odometry) ->None:
         """_summary_
@@ -143,9 +165,9 @@ class myTurtle():
 
         vel_msg = Twist()
         if angle > 0:
-            vel_msg.angular.z = 0.3
+            vel_msg.angular.z = 0.1
         elif angle < 0:
-            vel_msg.angular.z = -0.3
+            vel_msg.angular.z = -0.1
         else:
             vel_msg.angular.z = 0
 
@@ -186,7 +208,15 @@ def main():
     Turtle.drive_straight(2, 0.5)
     Turtle.rotate(math.pi)
     Turtle.spin_wheels(2, 1, 10)
-    Turtle.spin_wheels(0, 3, 10)
+    pose_msg = PoseStamped()
+    pose_msg.pose.position.x = 4
+    pose_msg.pose.position.y = 3
+    pose_msg.pose.orientation.x = 0
+    pose_msg.pose.orientation.y = 0
+    pose_msg.pose.orientation.z = 0
+    pose_msg.pose.orientation.w = 1
+    Turtle.send.publish(pose_msg)
+    rospy.spin()
     
     
 
