@@ -4,6 +4,7 @@ from geometry_msgs.msg import Twist, PoseStamped
 from nav_msgs.msg import Odometry
 import math
 import tf
+import random as rand
 
 class myTurtle():
     
@@ -250,9 +251,12 @@ def main():
         Turtle.drive_straight(0.5, 0.1)
         Turtle.rotate(math.pi/2)
 
+    rospy.loginfo("Task 8")
+    for i in range (0,4):
+        Turtle.spin_wheels(rand.uniform(-0.2, 0.2), rand.uniform(-0.2, 0.2), rand.uniform(5, 15))
+        rospy.sleep(1)
+    
     rospy.spin()
-    
-    
 
 
 
