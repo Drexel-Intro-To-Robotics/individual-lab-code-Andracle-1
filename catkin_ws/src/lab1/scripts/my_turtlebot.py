@@ -37,7 +37,7 @@ class myTurtle():
         :param goal: PoseStamped
         :return:
         """
-        
+        rospy.sleep(1)
         goalx = goal.pose.position.x
         goaly = goal.pose.position.y
         raworient = goal.pose.orientation
@@ -46,20 +46,33 @@ class myTurtle():
         direction = math.atan2((goaly-self.posy), (goalx-self.posx))
         rospy.loginfo(f"Towards: {direction}")
         vel_msg = Twist()
-        vel_msg.angular.z = 0.1
 
-        while abs(self.orient - direction) > 0.05 :
+        while not rospy.is_shutdown():
+            error = direction - self.orient
+            error = math.atan2((math.sin(error)),(math.cos(error)))
+
+            if abs(error) < 0.05:
+                break
+
+            vel_msg.angular.z = 0.5 * error
             self.Twist.publish(vel_msg)
             self.rate.sleep()
+
         self.stop()
         rospy.loginfo("Pointing Towards Goal")
 
         distance = math.sqrt((self.posx - goalx)**2 +(self.posy - goaly)**2)
-        self.drive_straight(distance, 1)
+        self.drive_straight(distance, 0.2)
         rospy.loginfo("At Goal")
 
-        vel_msg.angular.z = 0.1
-        while abs(self.orient - goalorient) > 0.05:
+        while not rospy.is_shutdown():
+            error = goalorient - self.orient
+            error = math.atan2((math.sin(error)),(math.cos(error)))
+
+            if abs(error) < 0.05:
+                break
+
+            vel_msg.angular.z = 0.5 * error
             self.Twist.publish(vel_msg)
             self.rate.sleep()
         self.stop()
@@ -114,13 +127,13 @@ class myTurtle():
         vel_msg.linear.y=0
         
         rospy.loginfo(f"Forward: {dist}")
-        while distance < dist:
+        while distance < dist and not rospy.is_shutdown():
             self.Twist.publish(vel_msg)
             self.rate.sleep()
             distance = math.sqrt((self.posx - currentx)**2 +(self.posy - currenty)**2)
 
-        rospy.loginfo("Forward Done")
         self.stop()
+        rospy.loginfo("Forward Done")
 
         
     
@@ -145,12 +158,12 @@ class myTurtle():
 
         rospy.loginfo(f"u1 (left): {u1}, u2 (right): {u2}, time: {time}")
         start = rospy.get_time()
-        while rospy.get_time() - start < time:
+        while rospy.get_time() - start < time and not rospy.is_shutdown():
             self.Twist.publish(vel_msg)
             self.rate.sleep()
 
-        rospy.loginfo("Spin Wheel Done")
         self.stop()
+        rospy.loginfo("Spin Wheel Done")
         
 
     def rotate(self, angle):
@@ -172,7 +185,7 @@ class myTurtle():
             vel_msg.angular.z = 0
 
         rospy.loginfo(f"Rotating: {angle}")
-        while abs(rotation) < abs(angle):
+        while abs(rotation) < abs(angle) and not rospy.is_shutdown():
             self.Twist.publish(vel_msg)
             self.rate.sleep()
 
@@ -181,10 +194,34 @@ class myTurtle():
             delta = math.atan2(math.sin(delta), math.cos(delta))
             rotation = rotation + abs(delta)
             lastO = currentO
-
-        rospy.loginfo("Rotating Done")
-        self.stop()
         
+        self.stop()
+        rospy.loginfo("Rotating Done")
+        
+
+    def drive_circle(self, radius):
+        '''
+        Drive in a circle
+        Radius: Radius of circle in meters
+        '''
+        rospy.sleep(1)
+        w = 0.2 / radius
+        length = 2 * math.pi * radius
+        time = length / 0.2
+
+        vel_msg = Twist()
+        vel_msg.linear.x = 0.2
+        vel_msg.angular.z = w
+
+        start = rospy.get_time()
+        rospy.loginfo(f"Circle Radius: {radius}")
+
+        while rospy.get_time() - start < time and not rospy.is_shutdown():
+            self.Twist.publish(vel_msg)
+            self.rate.sleep()
+
+        self.stop()
+        rospy.loginfo("Circle Done")
     
     def convert_to_euler(self, quat):
         # type: (Quaternion) -> float
@@ -205,9 +242,10 @@ def main():
     rospy.init_node("turtlebot", anonymous = False)
     Turtle = myTurtle()
     rospy.sleep(1)
-    Turtle.drive_straight(2, 0.5)
+    Turtle.drive_straight(2, 0.1)
     Turtle.rotate(math.pi)
-    Turtle.spin_wheels(2, 1, 10)
+    Turtle.spin_wheels(0.2, 0.1, 10)
+    Turtle.drive_circle(2)
     pose_msg = PoseStamped()
     pose_msg.pose.position.x = 4
     pose_msg.pose.position.y = 3
