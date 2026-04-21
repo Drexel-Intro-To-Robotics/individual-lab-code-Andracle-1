@@ -51,7 +51,7 @@ class myTurtle():
             error = direction - self.orient
             error = math.atan2((math.sin(error)),(math.cos(error)))
 
-            if abs(error) < 0.01:
+            if abs(error) < 0.03:
                 break
 
             vel_msg.angular.z = 0.5 * error
@@ -69,7 +69,7 @@ class myTurtle():
             error = goalorient - self.orient
             error = math.atan2((math.sin(error)),(math.cos(error)))
 
-            if abs(error) < 0.01:
+            if abs(error) < 0.03:
                 break
 
             vel_msg.angular.z = 0.5 * error
@@ -250,18 +250,6 @@ def main():
         Turtle.drive_straight(0.5, 0.1)
         Turtle.rotate(math.pi/2)
 
-
-    '''
-    Turtle.spin_wheels(0.2, 0.1, 10)
-    pose_msg = PoseStamped()
-    pose_msg.pose.position.x = 4
-    pose_msg.pose.position.y = 3
-    pose_msg.pose.orientation.x = 0
-    pose_msg.pose.orientation.y = 0
-    pose_msg.pose.orientation.z = 0
-    pose_msg.pose.orientation.w = 1
-    Turtle.send.publish(pose_msg)
-    '''
     rospy.spin()
     
     
