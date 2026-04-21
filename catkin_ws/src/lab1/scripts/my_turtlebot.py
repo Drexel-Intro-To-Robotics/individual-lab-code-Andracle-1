@@ -246,7 +246,7 @@ def main():
     Turtle.drive_circle(0.5)
 
     rospy.loginfo("Task 6")
-    for i in range (0, 3):
+    for i in range (0, 4):
         Turtle.drive_straight(0.5, 0.1)
         Turtle.rotate(math.pi/2)
 
