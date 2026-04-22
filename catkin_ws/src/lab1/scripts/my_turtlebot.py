@@ -39,11 +39,14 @@ class myTurtle():
         :return:
         """
         rospy.sleep(1)
+
+        #Saves Goal Data
         goalx = goal.pose.position.x
         goaly = goal.pose.position.y
         raworient = goal.pose.orientation
         goalorient = self.convert_to_euler(raworient)
         
+        #Calculates which direction and normalizes for (-pi, pi)
         direction = math.atan2((goaly-self.posy), (goalx-self.posx))
         rospy.loginfo(f"Towards: {direction}")
         vel_msg = Twist()
@@ -52,9 +55,10 @@ class myTurtle():
             error = direction - self.orient
             error = math.atan2((math.sin(error)),(math.cos(error)))
 
-            if abs(error) < 0.03:
+            if abs(error) < 0.03: #Break when close enough to the angle
                 break
-
+            
+            #angular velocity optimization so that it gets slower the closer it gets to the right angle
             vel_msg.angular.z = 0.5 * error
             self.Twist.publish(vel_msg)
             self.rate.sleep()
@@ -62,6 +66,7 @@ class myTurtle():
         self.stop()
         rospy.loginfo("Pointing Towards Goal")
 
+        #Calculate distance and send to drive_straight function
         distance = math.sqrt((self.posx - goalx)**2 +(self.posy - goaly)**2)
         self.drive_straight(distance, 0.2)
         rospy.loginfo("At Goal")
@@ -70,12 +75,14 @@ class myTurtle():
             error = goalorient - self.orient
             error = math.atan2((math.sin(error)),(math.cos(error)))
 
-            if abs(error) < 0.03:
+            if abs(error) < 0.03: #Break when close enough to the angle
                 break
 
-            vel_msg.angular.z = 0.5 * error
+            #angular velocity optimization like before
+            vel_msg.angular.z = 0.5 * error 
             self.Twist.publish(vel_msg)
             self.rate.sleep()
+            
         self.stop()
         rospy.loginfo("nav_to_pose complete")
         
@@ -119,6 +126,7 @@ class myTurtle():
         """
         rospy.sleep(1)
 
+        #Save current positions
         currentx = self.posx
         currenty = self.posy
         distance = 0
@@ -127,11 +135,12 @@ class myTurtle():
         vel_msg.linear.x=vel
         vel_msg.linear.y=0
         
+        #While the robot has not traveled the given distance, keep moving
         rospy.loginfo(f"Forward: {dist}")
         while distance < dist and not rospy.is_shutdown():
             self.Twist.publish(vel_msg)
             self.rate.sleep()
-            distance = math.sqrt((self.posx - currentx)**2 +(self.posy - currenty)**2)
+            distance = math.sqrt((self.posx - currentx)**2 +(self.posy - currenty)**2)  #Calculate how far robot has gone
 
         self.stop()
         rospy.loginfo("Forward Done")
@@ -148,15 +157,18 @@ class myTurtle():
         :return: None
         """
         rospy.sleep(1)
-        T = 0.287
+        T = 0.287 #Distance between wheels
 
+        #Calculate linear and angular velocity
         linv = (u1 + u2)/2
         angv = (u2 - u1) / T
+
 
         vel_msg = Twist()
         vel_msg.linear.x = linv
         vel_msg.angular.z = angv
 
+        #While time is not complete, keep sending velocities
         rospy.loginfo(f"u1 (left): {u1}, u2 (right): {u2}, time: {time}")
         start = rospy.get_time()
         while rospy.get_time() - start < time and not rospy.is_shutdown():
@@ -174,9 +186,11 @@ class myTurtle():
         :return: None
         """
         rospy.sleep(1)
+
         lastO = self.orient
         rotation = 0
 
+        #Changes which way to turn based on angle
         vel_msg = Twist()
         if angle > 0:
             vel_msg.angular.z = 0.1
@@ -185,14 +199,16 @@ class myTurtle():
         else:
             vel_msg.angular.z = 0
 
+        #While the rotation is not complete, keep rotating
         rospy.loginfo(f"Rotating: {angle}")
         while abs(rotation) < abs(angle) and not rospy.is_shutdown():
             self.Twist.publish(vel_msg)
             self.rate.sleep()
 
+
             currentO = self.orient
             delta = currentO - lastO
-            delta = math.atan2(math.sin(delta), math.cos(delta))
+            delta = math.atan2(math.sin(delta), math.cos(delta)) #Normalizes the change so its between (-pi, pi)
             rotation = rotation + abs(delta)
             lastO = currentO
         
@@ -206,6 +222,8 @@ class myTurtle():
         Radius: Radius of circle in meters
         '''
         rospy.sleep(1)
+
+        #Calculates angular velocity and time based on radius and 0.2 m/s
         w = 0.2 / radius
         length = 2 * math.pi * radius
         time = length / 0.2
@@ -217,6 +235,7 @@ class myTurtle():
         start = rospy.get_time()
         rospy.loginfo(f"Circle Radius: {radius}")
 
+        #While the time is not equal to the calculated time, keep sending velocity messages.
         while rospy.get_time() - start < time and not rospy.is_shutdown():
             self.Twist.publish(vel_msg)
             self.rate.sleep()
@@ -243,14 +262,17 @@ def main():
     rospy.init_node("turtlebot", anonymous = False)
     Turtle = myTurtle()
     rospy.sleep(1)
+    #Task 5: Go in a Circle
     rospy.loginfo("Task 5")
     Turtle.drive_circle(0.5)
 
+    #Task 6: Go in a Square
     rospy.loginfo("Task 6")
     for i in range (0, 4):
         Turtle.drive_straight(0.5, 0.1)
         Turtle.rotate(math.pi/2)
 
+    #Task 8: Random Dance
     rospy.loginfo("Task 8")
     for i in range (0,4):
         Turtle.spin_wheels(rand.uniform(-0.2, 0.2), rand.uniform(-0.2, 0.2), rand.uniform(5, 15))
