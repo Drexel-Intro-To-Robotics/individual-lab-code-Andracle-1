@@ -4,6 +4,7 @@ import copy
 import queue as Queue
 import math
 import matplotlib.pyplot as plt
+import time
 
 '''
 These variables are determined at runtime and should not be changed or mutated by you
@@ -39,6 +40,8 @@ def search(map):
     provided map.
     :param map: A '1-concept' PIL PixelAccess object to be searched. (basically a 2d boolean array)
     """
+    start_time = time.time() #Start Timer
+
     move = [(1,0), (0,1), (-1,0), (0,-1)] #Move right, down, left, up (Top left corner is (0,0), bottom right is (max,max))
 
     open.put((0,start))     #Insert 0 cost, start tile into queue.
@@ -53,6 +56,11 @@ def search(map):
         expanded[node] = (cost, came_from[node])    #Put into "explored"
 
         if node == end:     #If tile is last tile
+
+            end_time = time.time()  #End Timer
+            print(f"Time: {end_time - start_time}")
+            print(f"Nodes searched: {len(expanded)}")   #Count Nodes
+
             prev = node     #set prev to last node
             while prev is not None: #and go through all nodes in the path from end to beginning
                 path.append(prev)  
