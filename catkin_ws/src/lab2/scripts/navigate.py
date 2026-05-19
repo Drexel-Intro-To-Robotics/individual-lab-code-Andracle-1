@@ -87,6 +87,9 @@ class AStarPlanner:
 
     def heuristic(self, a, b):
         #Manhattan
+        #dx = a[0] - b[0]
+        #dy = a[1] -b[1]
+        #return math.sqrt(dx**2 + dy**2)
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
     def get_neighbors(self, current):
@@ -134,8 +137,8 @@ class AStarPlanner:
 
             # Optional: Publish grid cells here for live visualization 
             # (Warning: Publishing every loop can slow down large maps significantly)
-            # self.publish_gridcells(self.pub_expanded, expanded_nodes)
-            # self.publish_gridcells(self.pub_frontier, [node for _, node in frontier])
+            #self.publish_gridcells(self.pub_expanded, expanded_nodes)
+            #self.publish_gridcells(self.pub_frontier, [node for _, node in frontier])
 
         rospy.logwarn("A* Failed: No valid path found to the goal.")
 
