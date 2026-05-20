@@ -1,0 +1,14 @@
+<launch>
+    <arg name="map_file" default="$(env HOME)/real_world_map.yaml" />
+    <arg name="rviz_config" default="$(env HOME)/GridMap.rviz" />
+
+    <node pkg="map_server" type="map_server" name="map_server" args="$(arg map_file)" />
+
+    <node pkg="tf" type="static_transform_publisher" name="map_to_odom_broadcaster" args="0 0 0 0 0 0 map odom 100" />
+
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rviz_config)" required="true" />
+
+    <node pkg="lab2" type="astar_planner.py" name="astar_planner" output="screen" />
+
+    <node pkg="lab2" type="path_follower.py" name="path_follower" output="screen" />
+</launch>
