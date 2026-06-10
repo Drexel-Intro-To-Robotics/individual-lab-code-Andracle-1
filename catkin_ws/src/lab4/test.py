@@ -60,6 +60,29 @@ if __name__ == '__main__':
         # target_pose.position.z = 0.2
         # target_pose.orientation.w = 1.0
         # executor.execute_task_space_goal(target_pose)
+
+        # ---------------------------------------------------------
+        # 3. Testing Waypoints (NEW)
+        # ---------------------------------------------------------
+        waypoints = []
+        
+        # Start with the robot's current pose
+        wpose = executor.move_group.get_current_pose().pose
+        
+        # First waypoint: Move UP by 5 cm (0.05 meters)
+        wpose.position.z += 0.05
+        waypoints.append(copy.deepcopy(wpose))
+        
+        # Second waypoint: Move RIGHT by 5 cm
+        wpose.position.y += 0.05
+        waypoints.append(copy.deepcopy(wpose))
+        
+        # Third waypoint: Move DOWN by 5 cm
+        wpose.position.z -= 0.05
+        waypoints.append(copy.deepcopy(wpose))
+        
+        # Execute the generated list
+        executor.execute_waypoints(waypoints)
         
     except rospy.ROSInterruptException:
         pass
