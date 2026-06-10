@@ -3,6 +3,7 @@ import sys
 import rospy
 import moveit_commander
 import geometry_msgs.msg
+import copy
 
 class TrajectoryExecutor(object):
     def __init__(self):
