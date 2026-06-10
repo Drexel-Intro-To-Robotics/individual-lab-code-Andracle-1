@@ -49,40 +49,36 @@ class TrajectoryExecutor(object):
 if __name__ == '__main__':
     try:
         executor = TrajectoryExecutor()
-        # Example usage (uncomment and modify to test):
+        # Joint Space
+        #executor.execute_joint_space_goal([1.8055, 0.4661, -0, -0.4661]) 
+        #executor.execute_joint_space_goal([-1.8892, -0.4456, -0, -0.4456]) 
         
-        # 1. Joint Space
-        # executor.execute_joint_space_goal([0.0, -1.0, 0.3, 0.7]) 
-        
-        # 2. Task Space
-        # target_pose = geometry_msgs.msg.Pose()
-        # target_pose.position.x = 0.2
-        # target_pose.position.y = 0.0
-        # target_pose.position.z = 0.2
-        # target_pose.orientation.w = 1.0
-        # executor.execute_task_space_goal(target_pose)
+        # Task Space
+        #target_pose = geometry_msgs.msg.Pose()
+        #target_pose.position.x = 0.2
+        #target_pose.position.y = 0.0
+        #target_pose.position.z = 0.2
+        #target_pose.orientation.w = 1.0
+        #executor.execute_task_space_goal(target_pose)
 
-        # ---------------------------------------------------------
-        # 3. Testing Waypoints (NEW)
-        # ---------------------------------------------------------
+        # Waypoints
         waypoints = []
-        
-        # Start with the robot's current pose
+        # robot's current pose
         wpose = executor.move_group.get_current_pose().pose
         
-        # First waypoint: Move UP by 5 cm (0.05 meters)
+        # First waypoint: UP by 5 cm 
         wpose.position.z += 0.05
         waypoints.append(copy.deepcopy(wpose))
         
-        # Second waypoint: Move RIGHT by 5 cm
+        # Second waypoint: RIGHT by 5 cm
         wpose.position.y += 0.05
         waypoints.append(copy.deepcopy(wpose))
         
-        # Third waypoint: Move DOWN by 5 cm
+        # Third waypoint: DOWN by 5 cm
         wpose.position.z -= 0.05
         waypoints.append(copy.deepcopy(wpose))
         
-        # Execute the generated list
+        # Execute waypoints
         executor.execute_waypoints(waypoints)
         
     except rospy.ROSInterruptException:
